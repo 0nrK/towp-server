@@ -1,13 +1,11 @@
 import express, { Request, Response } from "express";
-import connectDB from "./config/db";
 import dotenv from 'dotenv'
+import cors from 'cors'
 import QueueRoute from './routes/queueRoute'
 const app = express();
+
 dotenv.config()
-
-
-connectDB()
-
+app.use(cors())
 app.use('/api/queue', QueueRoute)
 
 app.get("/", (req: Request, res: Response) => {

@@ -1,17 +1,21 @@
-// write mongoose connection code here
-import mongoose, { Error, ConnectOptions } from 'mongoose';
+import { IVideoWish } from "../types/Video"
 
-const connectDB = async () => {
-    try {
-        const conn = await mongoose.connect(process.env.MONGO_URI as string, {
-            useNewUrlParser: true,
-            useUnifiedTopology: true,
-        } as ConnectOptions);
-
-        console.log(`MongoDB Connected: ${conn.connection.host}`);
-    } catch (error: any) {
-        console.error(`Error: ${error.message}`);
-        process.exit(1);
+const db: IVideoWish[] = [
+    {
+        videoUrl: 'https://www.youtube.com/watch?v=NAHRpEqgcL4',
+        videoId: 'NAHRpEqgcL4',
+        createdBy: 'user11'
+    },
+    {
+        videoUrl: 'https://www.youtube.com/watch?v=Q2AvjHeTo2U',
+        videoId: 'Q2AvjHeTo2U',
+        createdBy: 'user21'
+    },
+    {
+        videoUrl: 'https://www.youtube.com/watch?v=yQxJrRzvUcw',
+        videoId: 'yQxJrRzvUcw',
+        createdBy: 'user11'
     }
-}
-export default connectDB
+]
+
+export default db

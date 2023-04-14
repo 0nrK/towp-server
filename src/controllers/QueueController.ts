@@ -1,23 +1,29 @@
-import Wish from "../models/Wish";
+import db from "../config/db";
 import { Request, Response } from "express";
 class QueueController {
     // ...
-    async getQueue(req: Request, res: Response) {
-        const data = await Wish.find()
+    getQueue(req: Request, res: Response) {
+        const data = db
         res.json(data)
     }
-    async addToQueue(req: Request, res: Response) {
+    addToQueue(req: Request, res: Response) {
         const user = 'deneme'
-        const { videoId } = req.body
-        const data = await new Wish({
+        const { videoId, videoUrl, createdBy } = req.body
+        const data = db.push({
+            videoUrl,
             videoId,
             createdBy: user
-        }).save()
+        })
+
         res.status(200).send(data)
     }
-    async removeFromQueue(req: Request, res: Response) {
+    removeFromQueue(req: Request, res: Response) {
         const { wishId } = req.body
-        const data = await Wish.findByIdAndDelete(wishId)
+        const data = db.filter(object => object.videoId !== wishId)
+        res.status(200).send(data)
+    }
+    getCurrentVideoId(req: Request, res: Response) {
+        const data = db[2]
         res.status(200).send(data)
     }
 }
