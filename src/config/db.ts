@@ -1,21 +1,14 @@
-import { IVideoWish } from "../types/Video"
+import mongoose from 'mongoose'
 
-const db: IVideoWish[] = [
-    {
-        videoUrl: 'https://www.youtube.com/watch?v=NAHRpEqgcL4',
-        videoId: 'NAHRpEqgcL4',
-        createdBy: 'user11'
-    },
-    {
-        videoUrl: 'https://www.youtube.com/watch?v=Q2AvjHeTo2U',
-        videoId: 'Q2AvjHeTo2U',
-        createdBy: 'user21'
-    },
-    {
-        videoUrl: 'https://www.youtube.com/watch?v=yQxJrRzvUcw',
-        videoId: 'yQxJrRzvUcw',
-        createdBy: 'user11'
-    }
-]
+export const db = mongoose.connection
 
-export default db
+db.once('open', () => {
+    console.log('Database connection was successfully.')
+})
+
+const loaders = async () => {
+    mongoose.set('strictQuery', false)
+    await mongoose.connect(process.env.MONGODB_URI as string)
+}
+
+export default loaders

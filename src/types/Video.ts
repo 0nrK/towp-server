@@ -1,6 +1,6 @@
-export interface IVideoWish  {
-    videoUrl: string;
-    createdBy: string,
-    videoId: string,
-    title?: string
+export interface IVideo  {
+    videoId: string
+    title: string
+    thumbnail: string
+    createdBy?: string
 }
