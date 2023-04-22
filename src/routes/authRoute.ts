@@ -26,10 +26,13 @@ router.post('/login', async (req: Request, res: Response) => {
         // hash password with bcrypt
         const user = await User.findOne({ username })
         // compare user.password with password 
-        const isPasswordCorrect = await bcrypt.compare(password, user?.password as string)
-        const token = generateToken(user?._id as string)
-        if (isPasswordCorrect) {
-            return res.status(200).send({ ...user, token })
+        if (user) {
+            console.log(user)
+            const isPasswordCorrect = await bcrypt.compare(password, user?.password as string)
+            if (isPasswordCorrect) {
+                const token = generateToken(user?._id as string)
+                return res.status(200).send({ user, token })
+            }
         }
         res.status(400).send({ message: 'Failed' })
     } catch (err) {
