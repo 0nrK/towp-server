@@ -31,6 +31,7 @@ const userSchema: Schema = new Schema<UserInterface>(
 userSchema.set('toJSON', {
     transform: (doc, ret) => {
         delete ret.password
+        delete ret.isAdmin
         return ret
     },
     virtuals: true

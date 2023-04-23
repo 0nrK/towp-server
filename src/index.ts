@@ -12,6 +12,9 @@ import bodyParser from "body-parser";
 import { IVideo } from "./types/Video";
 import helmet from 'helmet'
 import path from "path";
+import User from "./models/User";
+import { IMessage } from "./types/message";
+import jwt, { JwtPayload } from "jsonwebtoken";
 const app = express();
 
 app.use(cors({
@@ -45,9 +48,10 @@ app.use((req: Request, res: Response, next: NextFunction) => {
 loaders()
 
 
+
 const sockets: string[] = []
 const playlist: IVideo[] = []
-const messageList: string[] = []
+const messageList: IMessage[] = []
 const server = http.createServer(app);
 
 app.get('/api/auth', authRoute)
@@ -70,8 +74,14 @@ function socket({ io }: { io: Server }) {
       sockets.splice(sockets.indexOf(socket.id), 1)
     })
 
-    socket.on('SEND_MESSAGE', (data: any) => {
-      messageList.push(data)
+    socket.on('SEND_MESSAGE', async (data: any) => {
+      const decodedToken = jwt.verify(data.token, process.env.JWT_SECRET as string) as any
+      const user = await User.findById({ _id: decodedToken.id })
+      const message: IMessage = {
+        user: user?.username as any,
+        message: data.message
+      }
+      messageList.push(message)
       socket.emit('GET_MESSAGES', messageList)
     })
 
