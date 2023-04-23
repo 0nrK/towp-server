@@ -103,5 +103,12 @@ app.use(cors())
 
 app.use('/api/auth', authRoute)
 
+app.get('/', (req: Request, res: Response) => {
+  res.send
+})
+
+app.get('/', (req: Request, res: Response) => {
+  res.send('Hello World!')
+})
 
 server.listen(process.env.PORT, () => console.log(`Server listening on http://localhost:${process.env.PORT}`));
