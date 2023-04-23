@@ -4,7 +4,6 @@ import cors from 'cors'
 import http from 'http';
 import { Server } from "socket.io";
 import getVideoId from 'get-video-id';
-import bcrypt from 'bcryptjs'
 import loaders from "./config/db";
 import session from 'express-session'
 import getYTVideoInfo from "./utils/yt";
@@ -12,7 +11,6 @@ import authRoute from './routes/authRoute'
 import bodyParser from "body-parser";
 import { IVideo } from "./types/Video";
 import helmet from 'helmet'
-import User from "./models/User";
 import path from "path";
 const app = express();
 
@@ -29,6 +27,10 @@ app.use(
 app.use(bodyParser.urlencoded({
   extended: false
 }));
+
+app.use(cors({
+  origin: '*',
+}))
 
 
 
