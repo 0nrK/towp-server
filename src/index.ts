@@ -14,6 +14,11 @@ import helmet from 'helmet'
 import path from "path";
 const app = express();
 
+app.use(cors({
+  origin: '*',
+}))
+
+
 dotenv.config()
 app.use(
   helmet({
@@ -35,10 +40,6 @@ app.use((req: Request, res: Response, next: NextFunction) => {
   res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
   next();
 })
-app.use(cors({
-  origin: '*',
-}))
-
 
 
 loaders()
@@ -109,9 +110,6 @@ function socket({ io }: { io: Server }) {
 
 socket({ io })
 
-app.use(cors())
-
-app.use('/api/auth', authRoute)
 
 app.get('/', (req: Request, res: Response) => {
   res.sendFile(path.resolve(__dirname, "../public", "index.html"))
