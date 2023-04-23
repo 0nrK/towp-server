@@ -15,8 +15,11 @@ import path from "path";
 const app = express();
 
 dotenv.config()
-app.use(helmet())
-app.use(bodyParser.json())
+app.use(
+  helmet({
+    crossOriginEmbedderPolicy: false,
+  })
+); app.use(bodyParser.json())
 app.use(
   session({
     secret: process.env.SESSION_SECRET as string,
@@ -27,8 +30,10 @@ app.use(
 app.use(bodyParser.urlencoded({
   extended: false
 }));
-app.use((req:Request, res:Response, next:NextFunction) => {
+app.use((req: Request, res: Response, next: NextFunction) => {
   res.header("Access-Control-Allow-Origin", "*")
+  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+  next();
 })
 app.use(cors({
   origin: '*',
