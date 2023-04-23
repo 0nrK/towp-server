@@ -13,6 +13,7 @@ import bodyParser from "body-parser";
 import { IVideo } from "./types/Video";
 import helmet from 'helmet'
 import User from "./models/User";
+import path from "path";
 const app = express();
 
 dotenv.config()
@@ -108,7 +109,8 @@ app.get('/', (req: Request, res: Response) => {
 })
 
 app.get('/', (req: Request, res: Response) => {
-  res.send('Hello World!')
+  res.sendFile(path.resolve(__dirname, "../", "build", "index.html"));
 })
+console.log(path.resolve(__dirname, "../public","index.html"))
 
 server.listen(process.env.PORT, () => console.log(`Server listening on http://localhost:${process.env.PORT}`));
