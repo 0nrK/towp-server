@@ -14,7 +14,8 @@ router.post('/register', async (req: Request, res: Response) => {
         const hashedPw = await bcrypt.hash(password, 10)
         const user = await new User({ username, password: hashedPw })
         await user.save()
-        res.status(200).send(user)
+        const token = generateToken(user?._id as string)
+        return res.status(200).send({ user, token })
     } catch (err) {
         res.status(400).send({ message: 'Failed' })
     }
@@ -23,11 +24,9 @@ router.post('/register', async (req: Request, res: Response) => {
 router.post('/login', async (req: Request, res: Response) => {
     try {
         const { username, password } = req.body
-        // hash password with bcrypt
         const user = await User.findOne({ username })
         // compare user.password with password 
         if (user) {
-            console.log(user)
             const isPasswordCorrect = await bcrypt.compare(password, user?.password as string)
             if (isPasswordCorrect) {
                 const token = generateToken(user?._id as string)
