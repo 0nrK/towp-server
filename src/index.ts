@@ -105,12 +105,7 @@ app.use(cors())
 app.use('/api/auth', authRoute)
 
 app.get('/', (req: Request, res: Response) => {
-  res.send
+  res.sendFile(path.resolve(__dirname, "../public", "index.html"))
 })
-
-app.get('/', (req: Request, res: Response) => {
-  res.sendFile(path.resolve(__dirname, "../", "build", "index.html"));
-})
-console.log(path.resolve(__dirname, "../public","index.html"))
 
 server.listen(process.env.PORT, () => console.log(`Server listening on http://localhost:${process.env.PORT}`));
