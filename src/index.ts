@@ -1,4 +1,4 @@
-import express, { Request, Response } from "express";
+import express, { NextFunction, Request, Response } from "express";
 import dotenv from 'dotenv'
 import cors from 'cors'
 import http from 'http';
@@ -27,7 +27,9 @@ app.use(
 app.use(bodyParser.urlencoded({
   extended: false
 }));
-
+app.use((req:Request, res:Response, next:NextFunction) => {
+  res.header("Access-Control-Allow-Origin", "*")
+})
 app.use(cors({
   origin: '*',
 }))
