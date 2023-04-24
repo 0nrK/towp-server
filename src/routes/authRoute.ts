@@ -6,6 +6,7 @@ import generateToken from '../utils/generateJwt'
 const router = express.Router()
 
 router.post('/register', async (req: Request, res: Response) => {
+    console.log(req.body.username, req.body.password)
     try {
         const { username, password } = req.body
         // hash password with bcrypt

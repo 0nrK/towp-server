@@ -14,20 +14,22 @@ import helmet from 'helmet'
 import path from "path";
 import User from "./models/User";
 import { IMessage } from "./types/message";
-import jwt, { JwtPayload } from "jsonwebtoken";
+import jwt from "jsonwebtoken";
+
 const app = express();
 
 app.use(cors({
-  origin: '*',
-}))
-
+  origin: "https://towp-client.vercel.app/",
+  credentials: true,
+}));
+app.use(express.urlencoded({ extended: true }));
 
 dotenv.config()
 app.use(
   helmet({
     crossOriginEmbedderPolicy: false,
-  })
-); app.use(bodyParser.json())
+  }));
+app.use(bodyParser.json())
 app.use(
   session({
     secret: process.env.SESSION_SECRET as string,
@@ -38,12 +40,8 @@ app.use(
 app.use(bodyParser.urlencoded({
   extended: false
 }));
-app.use((req: Request, res: Response, next: NextFunction) => {
-  res.header("Access-Control-Allow-Origin", "*")
-  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-  next();
-})
 
+app.get('/api/auth', authRoute)
 
 loaders()
 
@@ -54,7 +52,6 @@ const playlist: IVideo[] = []
 const messageList: IMessage[] = []
 const server = http.createServer(app);
 
-app.get('/api/auth', authRoute)
 
 const io = new Server(server, {
   cors: {
