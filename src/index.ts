@@ -19,16 +19,13 @@ import jwt from "jsonwebtoken";
 const app = express();
 
 app.use(cors({
-  origin: "https://towp-client.vercel.app/",
+  origin: ['http://localhost:3000', "https://towp-client.vercel.app/"],
   credentials: true,
 }));
 app.use(express.urlencoded({ extended: true }));
 
 dotenv.config()
-app.use(
-  helmet({
-    crossOriginEmbedderPolicy: false,
-  }));
+
 app.use(bodyParser.json())
 app.use(
   session({
@@ -41,7 +38,7 @@ app.use(bodyParser.urlencoded({
   extended: false
 }));
 
-app.get('/api/auth', authRoute)
+app.use('/api/auth', authRoute)
 
 loaders()
 
