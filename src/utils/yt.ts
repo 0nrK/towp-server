@@ -1,12 +1,34 @@
 import axios from 'axios'
 
-export default async function getYTVideoInfo(videoId: string) {
+export async function getYTVideoInfo({ videoId, part = 'snippet' }: { videoId: string, part: string }) {
     try {
-        const response = await axios.get(`https://www.googleapis.com/youtube/v3/videos?part=snippet&id=${videoId}&key=${process.env.YT_API_KEY}`)
+        const response = await axios.get(`https://www.googleapis.com/youtube/v3/videos?part=${part}&id=${videoId}&key=${process.env.YT_API_KEY}`)
         const data = response.data
-        const videoData  = data.items[0].snippet
+        const videoData = data.items[0][part]
         return videoData
     } catch (err) {
         console.log(err)
     }
+}
+
+
+export function durationFormater(data: string): number {
+    let a = data.match(/\d+/g)
+    let duration = 0
+
+    if (a!.length == 3) {
+        duration = duration + parseInt(a![0]) * 3600;
+        duration = duration + parseInt(a![1]) * 60;
+        duration = duration + parseInt(a![2]);
+    }
+
+    if (a!.length == 2) {
+        duration = duration + parseInt(a![0]) * 60;
+        duration = duration + parseInt(a![1]);
+    }
+
+    if (a!.length == 1) {
+        duration = duration + parseInt(a![0]);
+    }
+    return duration
 }
