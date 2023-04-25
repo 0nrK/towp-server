@@ -1,4 +1,4 @@
-import express, { NextFunction, Request, Response } from "express";
+import express, { Request, Response } from "express";
 import dotenv from 'dotenv'
 import cors from 'cors'
 import http from 'http';
@@ -6,15 +6,15 @@ import { Server } from "socket.io";
 import getVideoId from 'get-video-id';
 import loaders from "./config/db";
 import session from 'express-session'
-import { durationFormater, getYTVideoInfo } from "./utils/yt";
+import { durationFormater, getVideoDuration, getYTVideoInfo } from "./utils/yt";
 import authRoute from './routes/authRoute'
 import bodyParser from "body-parser";
-import { ICurrentVideo, IVideo } from "./types/Video";
-import helmet from 'helmet'
+import { IVideo } from "./types/Video";
 import path from "path";
 import User from "./models/User";
 import { IMessage } from "./types/message";
 import jwt from "jsonwebtoken";
+import { promisify } from "./utils/promisify";
 
 const app = express();
 
@@ -45,15 +45,15 @@ const sockets: string[] = []
 const playlist: IVideo[] = []
 const messageList: IMessage[] = []
 const server = http.createServer(app);
-let videoDuration: [number] = [30]
-let currentVideo: any = null
+let videoDuration: number = 30
+let currentVideo: IVideo = playlist[0]
 
-setTimeout(async () => {
-  console.log('asad')
+
+function setCurrentVideo() {
   playlist.shift()
   currentVideo = playlist[0]
-  console.log(videoDuration)
-}, videoDuration[0] * 1000)
+  promisify(setCurrentVideo, currentVideo?.duration ?? videoDuration)
+}
 
 const io = new Server(server, {
   cors: {
@@ -80,8 +80,7 @@ function socket({ io }: { io: Server }) {
       if (user!.isAdmin) {
         const text = data.message.split(' ')
         if (text.includes('/next')) {
-          playlist.shift()
-          currentVideo = playlist[0]
+          setCurrentVideo()
           socket.emit('START_VIDEO', currentVideo)
         }
       }
@@ -104,23 +103,23 @@ function socket({ io }: { io: Server }) {
     setInterval(() => {
       socket.emit('GET_PLAYLIST', playlist)
     }, 2000)
-    socket.on('START_VIDEO', (data: any) => {
+    socket.on('VIDEO_END', async () => {
+      setCurrentVideo()
       socket.emit('CURRENT_VIDEO', currentVideo)
     })
     socket.on('ADD_TO_PLAYLIST', async (data: any) => {
       if (playlist.length < 20) {
         const { id }: any = getVideoId(data)
         const { title } = await getYTVideoInfo({ videoId: id, part: 'snippet' })
+        const { duration } = await getVideoDuration(id)
+        const formatedDuration = durationFormater(duration)
         const thumbnail = `https://img.ytimg.com/vi/${id}/default.jpg`
-        playlist.push({ videoId: id, title, thumbnail })
-        if (!currentVideo) currentVideo = playlist[0]
-        if (currentVideo) {
-          const { duration } = await getYTVideoInfo({
-            videoId: currentVideo?.videoId,
-            part: 'contentDetails'
-          })
-          videoDuration[0] = durationFormater(duration)
+        playlist.push({ videoId: id, title, thumbnail, duration: formatedDuration })
+        if (!currentVideo) {
+          currentVideo = playlist[0]
+          videoDuration = currentVideo.duration
         }
+        socket.emit('SUCCESS')
         socket.emit('GET_PLAYLIST', playlist)
       } else {
         socket.emit('FAIL', 'Playlist is full')

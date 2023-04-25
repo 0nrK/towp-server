@@ -11,6 +11,16 @@ export async function getYTVideoInfo({ videoId, part = 'snippet' }: { videoId: s
     }
 }
 
+export async function getVideoDuration(videoId: string) {
+    try {
+        const response = await axios.get(`https://www.googleapis.com/youtube/v3/videos?part=contentDetails&id=${videoId}&key=${process.env.YT_API_KEY}`)
+        const data = response.data
+        const videoData = data.items[0].contentDetails
+        return videoData
+    } catch (err) {
+        console.log(err)
+    }
+}
 
 export function durationFormater(data: string): number {
     let a = data.match(/\d+/g)
