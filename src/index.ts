@@ -45,14 +45,39 @@ const sockets: string[] = []
 const playlist: IVideo[] = []
 const messageList: IMessage[] = []
 const server = http.createServer(app);
-let videoDuration: number = 30
-let currentVideo: IVideo = playlist[0]
+
+
+const current: any = {
+  _duration: 0,
+  _video: playlist[0],
+  _videoTimer: 0,
+  set duration(value: number) {
+    this._duration = value
+  },
+  set video(value: IVideo) {
+    this._video = value
+    setInterval(() => setCurrentVideo(), this?._video?.duration * 1000)
+  },
+  set videoTimer(value: number) {
+    this._videoTimer = value
+  },
+  get videoTimer() {
+    return this._videoTimer
+  },
+  get duration() {
+    return this._duration
+  },
+  get video() {
+    return this._video
+  }
+}
+
 
 
 function setCurrentVideo() {
+  console.log(current._video)
   playlist.shift()
-  currentVideo = playlist[0]
-  promisify(setCurrentVideo, currentVideo?.duration ?? videoDuration)
+  current.video = playlist[0]
 }
 
 const io = new Server(server, {
@@ -61,11 +86,18 @@ const io = new Server(server, {
     origin: '*'
   },
 });
-
+process.on('warning', e => console.warn(e.stack))
 function socket({ io }: { io: Server }) {
   console.log(`Sockets enabled`);
 
   io.on('connection', (socket: any) => {
+
+    socket.on('SYNK_VIDEO', (second: number) => {
+      current.videoTimer = second + 3
+    })
+    socket.emit('GET_VIDEO', { video: current.video, videoTimer: current.videoTimer })
+
+
     console.log(`User connected ${socket.id}`);
     sockets.push(socket.id)
     socket.on('disconnect', (socket: any) => {
@@ -81,7 +113,7 @@ function socket({ io }: { io: Server }) {
         const text = data.message.split(' ')
         if (text.includes('/next')) {
           setCurrentVideo()
-          socket.emit('START_VIDEO', currentVideo)
+          socket.emit('CURRENT_VIDEO', current._video)
         }
       }
       const message: IMessage = {
@@ -93,7 +125,7 @@ function socket({ io }: { io: Server }) {
     })
 
     setInterval(() => {
-      socket.emit('CURRENT_VIDEO', currentVideo)
+      socket.emit('CURRENT_VIDEO', { video: current._video })
     }, 3000)
 
     setInterval(() => {
@@ -104,8 +136,7 @@ function socket({ io }: { io: Server }) {
       socket.emit('GET_PLAYLIST', playlist)
     }, 2000)
     socket.on('VIDEO_END', async () => {
-      setCurrentVideo()
-      socket.emit('CURRENT_VIDEO', currentVideo)
+      socket.emit('CURRENT_VIDEO', { video: current.video })
     })
     socket.on('ADD_TO_PLAYLIST', async (data: any) => {
       if (playlist.length < 20) {
@@ -115,9 +146,8 @@ function socket({ io }: { io: Server }) {
         const formatedDuration = durationFormater(duration)
         const thumbnail = `https://img.ytimg.com/vi/${id}/default.jpg`
         playlist.push({ videoId: id, title, thumbnail, duration: formatedDuration })
-        if (!currentVideo) {
-          currentVideo = playlist[0]
-          videoDuration = currentVideo.duration
+        if (!current._video) {
+          current.video = playlist[0]
         }
         socket.emit('SUCCESS')
         socket.emit('GET_PLAYLIST', playlist)
