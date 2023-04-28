@@ -56,9 +56,9 @@ const current: any = {
   },
   set video(value: IVideo) {
     this._videoTimer = 0
-    clearInterval(this._timerInterval)
     this._video = value
     this._timerInterval = setInterval(() => {
+      console.log(this._videoTimer)
       this.videoTimer = this.videoTimer + 1
     }, 1000)
     setTimeout(() => {
@@ -82,8 +82,13 @@ const current: any = {
 
 
 function setCurrentVideo() {
-  console.log(current._video)
   playlist.shift()
+  if(playlist.length === 0) {
+    clearInterval(current._timerInterval)
+    current._video = null 
+    current._videoTimer = 0
+    return;
+  }
   current.video = playlist[0]
 }
 
@@ -99,7 +104,7 @@ function socket({ io }: { io: Server }) {
 
   io.on('connection', (socket: any) => {
 
-    socket.emit('GET_VIDEO', { video: current.video, videoTimer: current.videoTimer + 1 })
+    socket.emit('GET_VIDEO', { video: current.video, videoTimer: current.videoTimer })
 
 
     console.log(`User connected ${socket.id}`);
@@ -145,8 +150,7 @@ function socket({ io }: { io: Server }) {
     socket.on('ADD_TO_PLAYLIST', async (data: any) => {
       if (playlist.length < 20) {
         const { id }: any = getVideoId(data)
-        const { title } = await getYTVideoInfo({ videoId: id, part: 'snippet' })
-        if (!title) throw new Error('Error geting video title')
+        const { title } = await getYTVideoInfo({ videoId: id, part: 'snippet' }).catch((err) => new Error('err'))
         const { duration } = await getVideoDuration(id)
         if (!title) throw new Error('Error geting video duration')
         const formatedDuration = durationFormater(duration)
