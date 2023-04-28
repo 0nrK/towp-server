@@ -55,8 +55,15 @@ const current: any = {
     this._duration = value
   },
   set video(value: IVideo) {
+    this._videoTimer = 0
+    clearInterval(this._timerInterval)
     this._video = value
-    setInterval(() => setCurrentVideo(), this?._video?.duration * 1000)
+    this._timerInterval = setInterval(() => {
+      this.videoTimer = this.videoTimer + 1
+    }, 1000)
+    setTimeout(() => {
+      setCurrentVideo()
+    }, this?._video?.duration * 1000)
   },
   set videoTimer(value: number) {
     this._videoTimer = value
@@ -92,10 +99,7 @@ function socket({ io }: { io: Server }) {
 
   io.on('connection', (socket: any) => {
 
-    socket.on('SYNK_VIDEO', (second: number) => {
-      current.videoTimer = second + 3
-    })
-    socket.emit('GET_VIDEO', { video: current.video, videoTimer: current.videoTimer })
+    socket.emit('GET_VIDEO', { video: current.video, videoTimer: current.videoTimer + 1 })
 
 
     console.log(`User connected ${socket.id}`);
@@ -142,7 +146,9 @@ function socket({ io }: { io: Server }) {
       if (playlist.length < 20) {
         const { id }: any = getVideoId(data)
         const { title } = await getYTVideoInfo({ videoId: id, part: 'snippet' })
+        if (!title) throw new Error('Error geting video title')
         const { duration } = await getVideoDuration(id)
+        if (!title) throw new Error('Error geting video duration')
         const formatedDuration = durationFormater(duration)
         const thumbnail = `https://img.ytimg.com/vi/${id}/default.jpg`
         playlist.push({ videoId: id, title, thumbnail, duration: formatedDuration })
