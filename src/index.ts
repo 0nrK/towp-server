@@ -57,11 +57,15 @@ const current: any = {
   set video(value: IVideo) {
     this._videoTimer = 0
     this._video = value
+    if (!value) {
+      console.log(this._video)
+      return;
+    };
     this._timerInterval = setInterval(() => {
       console.log(this._videoTimer)
       this.videoTimer = this.videoTimer + 1
     }, 1000)
-    setTimeout(() => {
+    this._durationTimeout = setTimeout(() => {
       setCurrentVideo()
     }, this?._video?.duration * 1000)
   },
@@ -83,13 +87,11 @@ const current: any = {
 
 function setCurrentVideo() {
   playlist.shift()
-  if(playlist.length === 0) {
-    clearInterval(current._timerInterval)
-    current._video = null 
-    current._videoTimer = 0
-    return;
-  }
   current.video = playlist[0]
+  if (!current._video) {
+    clearInterval(current._timerInterval)
+    clearTimeout(current._durationTimeout)
+  }
 }
 
 const io = new Server(server, {
@@ -105,7 +107,6 @@ function socket({ io }: { io: Server }) {
   io.on('connection', (socket: any) => {
 
     socket.emit('GET_VIDEO', { video: current.video, videoTimer: current.videoTimer })
-
 
     console.log(`User connected ${socket.id}`);
     sockets.push(socket.id)
