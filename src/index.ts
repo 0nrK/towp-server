@@ -1,4 +1,4 @@
-import express, { Request, Response } from "express";
+import express, { NextFunction, Request, Response } from "express";
 import dotenv from 'dotenv'
 import cors from 'cors'
 import http from 'http';
@@ -39,7 +39,21 @@ app.use('/api/auth', authRoute)
 
 loaders()
 
+app.use((req: Request, res: Response, next: NextFunction) => {
+  const error: any = new Error("Not Found")
+  error.status = 404;
+  next(error)
+})
 
+app.use((error: any, req: Request, res: Response, next: NextFunction) => {
+  if (error.status) {
+    return res.status(error.status).json({
+      message: error.message,
+    })
+  }
+
+  res.status(500).json({ message: 'something went wrong' })
+})
 
 const sockets: string[] = []
 const playlist: IVideo[] = []
