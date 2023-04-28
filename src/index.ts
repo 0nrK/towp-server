@@ -71,10 +71,6 @@ const current: any = {
   set video(value: IVideo) {
     this._videoTimer = 0
     this._video = value
-    if (!value) {
-      console.log(this._video)
-      return;
-    };
     this._timerInterval = setInterval(() => {
       console.log(this._videoTimer)
       this.videoTimer = this.videoTimer + 1
@@ -101,11 +97,12 @@ const current: any = {
 
 function setCurrentVideo() {
   playlist.shift()
-  current.video = playlist[0]
   if (!current._video) {
     clearInterval(current._timerInterval)
     clearTimeout(current._durationTimeout)
+    return;
   }
+  current.video = playlist[0]
 }
 
 const io = new Server(server, {
@@ -114,7 +111,7 @@ const io = new Server(server, {
     origin: '*'
   },
 });
-process.on('warning', e => console.warn(e.stack))
+process.on('warning', e => console.warn('warning:', e.stack))
 function socket({ io }: { io: Server }) {
   console.log(`Sockets enabled`);
 
