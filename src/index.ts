@@ -168,7 +168,9 @@ function socket({ io }: { io: Server }) {
         const { id }: any = getVideoId(data)
         const { title } = await getYTVideoInfo({ videoId: id, part: 'snippet' }).catch((err) => new Error('err'))
         const { duration } = await getVideoDuration(id)
-        if (!title) throw new Error('Error geting video duration')
+        if (!title || !duration || !id) {
+          throw new Error('Error geting video duration')
+        }
         const formatedDuration = durationFormater(duration)
         const thumbnail = `https://img.ytimg.com/vi/${id}/default.jpg`
         playlist.push({ videoId: id, title, thumbnail, duration: formatedDuration })
