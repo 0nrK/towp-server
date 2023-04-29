@@ -73,9 +73,6 @@ const current: any = {
     this._videoTimer = 0
     this._video = value
     this._startedPlayingAt = Date.now() / 1000
-    this._durationTimeout = setTimeout(() => {
-      setCurrentVideo()
-    }, this?._video?.duration * 1000)
   },
   set videoTimer(value: number) {
     this._videoTimer = value
@@ -104,6 +101,9 @@ function setCurrentVideo() {
     return;
   }
   current.video = playlist[0]
+  current._durationTimeout = setTimeout(() => {
+    setCurrentVideo()
+  }, current.video.duration * 1000)
 }
 
 const io = new Server(server, {
@@ -173,7 +173,7 @@ function socket({ io }: { io: Server }) {
         const thumbnail = `https://img.ytimg.com/vi/${id}/default.jpg`
         playlist.push({ videoId: id, title, thumbnail, duration: formatedDuration })
         if (!current.video) {
-          current.video = playlist[0]
+          setCurrentVideo()
         }
         socket.emit('SUCCESS')
         socket.emit('GET_PLAYLIST', playlist)
