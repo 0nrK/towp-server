@@ -97,6 +97,7 @@ const current: any = {
 function setCurrentVideo() {
   playlist.shift()
   if (!playlist[0]) {
+    current.videoTimer = 0
     clearTimeout(current._durationTimeout)
     return;
   }
