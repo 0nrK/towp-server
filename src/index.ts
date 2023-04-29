@@ -65,16 +65,14 @@ const current: any = {
   _duration: 0,
   _video: playlist[0],
   _videoTimer: 0,
+  _startedPlayingAt: Date.now() / 1000,
   set duration(value: number) {
     this._duration = value
   },
   set video(value: IVideo) {
     this._videoTimer = 0
     this._video = value
-    this._timerInterval = setInterval(() => {
-      console.log(this._videoTimer)
-      this.videoTimer = this.videoTimer + 1
-    }, 1000)
+    this._startedPlayingAt = Date.now() / 1000
     this._durationTimeout = setTimeout(() => {
       setCurrentVideo()
     }, this?._video?.duration * 1000)
@@ -83,7 +81,8 @@ const current: any = {
     this._videoTimer = value
   },
   get videoTimer() {
-    return this._videoTimer
+    const currentSecond = Date.now() / 1000 - this?._startedPlayingAt
+    return Math.round(currentSecond + 3)
   },
   get duration() {
     return this._duration
@@ -97,8 +96,7 @@ const current: any = {
 
 function setCurrentVideo() {
   playlist.shift()
-  if (!current._video) {
-    clearInterval(current._timerInterval)
+  if (playlist[0]) {
     clearTimeout(current._durationTimeout)
     return;
   }
@@ -117,7 +115,10 @@ function socket({ io }: { io: Server }) {
 
   io.on('connection', (socket: any) => {
 
-    socket.emit('GET_VIDEO', { video: current.video, videoTimer: current.videoTimer })
+    socket.emit('GET_VIDEO', {
+      video: current.video,
+      videoTimer: current.videoTimer
+    })
 
     console.log(`User connected ${socket.id}`);
     sockets.push(socket.id)
