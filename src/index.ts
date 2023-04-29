@@ -93,7 +93,7 @@ const current: any = {
 
 function setCurrentVideo() {
   playlist.shift()
-  current._startedPlayingAt = 0
+  current._startedPlayingAt = Date.now() / 1000
   if (!playlist[0]) {
     current.video = null
     current.videoTimer = 0
