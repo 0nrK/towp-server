@@ -96,7 +96,9 @@ const current: any = {
 
 function setCurrentVideo() {
   playlist.shift()
+  current._startedPlayingAt = 0
   if (!playlist[0]) {
+    current.video = null
     current.videoTimer = 0
     clearTimeout(current._durationTimeout)
     return;
@@ -148,7 +150,7 @@ function socket({ io }: { io: Server }) {
     })
 
     setInterval(() => {
-      socket.emit('CURRENT_VIDEO', { video: current._video })
+      socket.emit('CURRENT_VIDEO', { video: current.video })
     }, 3000)
 
     setInterval(() => {
@@ -170,7 +172,7 @@ function socket({ io }: { io: Server }) {
         const formatedDuration = durationFormater(duration)
         const thumbnail = `https://img.ytimg.com/vi/${id}/default.jpg`
         playlist.push({ videoId: id, title, thumbnail, duration: formatedDuration })
-        if (!current._video) {
+        if (!current.video) {
           current.video = playlist[0]
         }
         socket.emit('SUCCESS')
