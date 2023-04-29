@@ -82,7 +82,7 @@ const current: any = {
   },
   get videoTimer() {
     const currentSecond = Date.now() / 1000 - this?._startedPlayingAt
-    return Math.round(currentSecond + 3)
+    return Math.round(currentSecond)
   },
   get duration() {
     return this._duration
@@ -96,7 +96,7 @@ const current: any = {
 
 function setCurrentVideo() {
   playlist.shift()
-  if (playlist[0]) {
+  if (!playlist[0]) {
     clearTimeout(current._durationTimeout)
     return;
   }
