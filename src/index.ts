@@ -133,6 +133,13 @@ function socket({ io }: { io: Server }) {
       })
     })
 
+    setInterval(() => {
+      socket.emit('GET_VIDEO', {
+        video: current.video,
+        videoTimer: current.videoTimer
+      })
+    }, 3000)
+
 
     console.log(`User connected ${socket.id}`);
     sockets.push(socket.id)
