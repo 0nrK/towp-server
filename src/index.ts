@@ -102,7 +102,6 @@ function setCurrentVideo() {
   if (!playlist[0]) {
     current.video = null
     current.videoTimer = 0
-    clearTimeout(current._durationTimeout)
     return;
   }
   current.video = playlist[0]
@@ -119,10 +118,19 @@ function socket({ io }: { io: Server }) {
   console.log(`Sockets enabled`);
 
   io.on('connection', (socket: any) => {
-
     socket.emit('GET_VIDEO', {
-      video: current._video,
+      video: current.video,
       videoTimer: current.videoTimer
+    })
+
+    socket.emit('GET_PLAYLIST', playlist)
+    socket.emit('GET_MESSAGES', messageList)
+
+    socket.on('VIDEO_ENDS', () => {
+      socket.emit('GET_VIDEO', {
+        video: current.video,
+        videoTimer: current.videoTimer
+      })
     })
 
 
@@ -141,7 +149,11 @@ function socket({ io }: { io: Server }) {
         const text = data.message.split(' ')
         if (text.includes('/next')) {
           setCurrentVideo()
-          socket.emit('CURRENT_VIDEO', current._video)
+          io.sockets.emit('GET_VIDEO', {
+            video: current.video,
+            videoTimer: current.videoTimer
+          })
+          io.sockets.emit('GET_PLAYLIST', playlist)
         }
       }
       const message: IMessage = {
@@ -149,21 +161,8 @@ function socket({ io }: { io: Server }) {
         message: data.message
       }
       messageList.push(message)
-      socket.emit('GET_MESSAGES', messageList)
+      io.sockets.emit('GET_MESSAGES', messageList)
     })
-    setInterval(() => {
-      socket.emit('CURRENT_VIDEO', {
-        video: current._video,
-      })
-    }, 3000)
-
-    setInterval(() => {
-      socket.emit('GET_MESSAGES', messageList)
-    }, 1000)
-
-    setInterval(() => {
-      socket.emit('GET_PLAYLIST', playlist)
-    }, 2000)
 
     socket.on('ADD_TO_PLAYLIST', async (data: any) => {
       if (playlist.length < 20) {
@@ -178,9 +177,13 @@ function socket({ io }: { io: Server }) {
         playlist.push({ videoId: id, title, thumbnail, duration: formatedDuration })
         if (!current.video) {
           current.video = playlist[0]
+          io.sockets.emit('GET_VIDEO', {
+            video: current.video,
+            videoTimer: current.videoTimer
+          })
         }
         socket.emit('SUCCESS')
-        socket.emit('GET_PLAYLIST', playlist)
+        io.sockets.emit('GET_PLAYLIST', playlist)
       } else {
         socket.emit('FAIL', 'Playlist is full')
       }
