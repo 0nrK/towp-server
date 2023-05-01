@@ -134,7 +134,7 @@ function socket({ io }: { io: Server }) {
     })
 
     setInterval(() => {
-      socket.emit('GET_VIDEO', {
+      socket.emit('CURRENT_VIDEO', {
         video: current.video,
         videoTimer: current.videoTimer
       })
