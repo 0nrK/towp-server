@@ -136,7 +136,6 @@ function socket({ io }: { io: Server }) {
     setInterval(() => {
       socket.emit('CURRENT_VIDEO', {
         video: current.video,
-        videoTimer: current.videoTimer
       })
     }, 3000)
 
