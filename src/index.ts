@@ -99,6 +99,7 @@ const current: any = {
 function setCurrentVideo() {
   playlist.shift()
   current._startedPlayingAt = Date.now() / 1000
+  clearTimeout(current._durationTimeout)
   if (!playlist[0]) {
     current.video = null
     current.videoTimer = 0
@@ -172,15 +173,23 @@ function socket({ io }: { io: Server }) {
 
     socket.on('ADD_TO_PLAYLIST', async (data: any) => {
       if (playlist.length < 20) {
-        const { id }: any = getVideoId(data)
-        const { title } = await getYTVideoInfo({ videoId: id, part: 'snippet' }).catch((err) => new Error('err'))
+        const decodedToken = jwt.verify(data.token, process.env.JWT_SECRET as string) as any
+        const user = await User.findById({ _id: decodedToken.id })
+        const { id }: any = getVideoId(data.id)
+        const { title } = await getYTVideoInfo({ videoId: id, part: 'snippet' })
         const { duration } = await getVideoDuration(id)
         if (!title || !duration || !id) {
           throw new Error('Error geting video duration')
         }
         const formatedDuration = durationFormater(duration)
         const thumbnail = `https://img.ytimg.com/vi/${id}/default.jpg`
-        playlist.push({ videoId: id, title, thumbnail, duration: formatedDuration })
+        playlist.push({
+          videoId: id,
+          title,
+          thumbnail,
+          duration: formatedDuration,
+          createdBy: user?.username
+        })
         if (!current.video) {
           current.video = playlist[0]
           io.sockets.emit('GET_VIDEO', {
