@@ -6,14 +6,13 @@ import generateToken from '../utils/generateJwt'
 const router = express.Router()
 
 router.post('/register', async (req: Request, res: Response) => {
-    console.log(req.body.username, req.body.password)
     try {
-        const { username, password } = req.body
+        const { username, password, email } = req.body
         // hash password with bcrypt
         const isUserExists = await User.findOne({ username })
         if (isUserExists) return res.status(400).send('User already exists')
         const hashedPw = await bcrypt.hash(password, 10)
-        const user = await new User({ username, password: hashedPw })
+        const user = await new User({ username, password: hashedPw, email })
         await user.save()
         const token = generateToken(user?._id as string)
         return res.status(200).send({ user, token })

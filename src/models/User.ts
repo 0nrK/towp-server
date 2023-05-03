@@ -5,7 +5,6 @@ export interface UserInterface extends Document {
     password: string
     isAdmin: boolean
     isBanned: boolean
-    bannedTill: Date
 }
 
 const userSchema: Schema = new Schema<UserInterface>(
@@ -26,10 +25,6 @@ const userSchema: Schema = new Schema<UserInterface>(
         isBanned: {
             type: Boolean,
             default: false
-        },
-        bannedTill: {
-            type: Date,
-            required: false
         }
     },
     {

@@ -132,6 +132,7 @@ function socket({ io }: { io: Server }) {
         video: current.video,
         videoTimer: current.videoTimer
       })
+      socket.emit('GET_PLAYLIST', playlist)
     })
 
     setInterval(() => {
@@ -151,7 +152,10 @@ function socket({ io }: { io: Server }) {
     socket.on('SEND_MESSAGE', async (data: any) => {
       const decodedToken = jwt.verify(data.token, process.env.JWT_SECRET as string) as any
       const user = await User.findById({ _id: decodedToken.id })
-
+      if (user!.isBanned) {
+        socket.emit('USER_BANNED', 'You are banned')
+        return;
+      }
       if (user!.isAdmin) {
         const text = data.message.split(' ')
         if (text.includes('/next')) {
@@ -162,9 +166,25 @@ function socket({ io }: { io: Server }) {
           })
           io.sockets.emit('GET_PLAYLIST', playlist)
         }
+        if (text.includes('/ban')) {
+          const user = text[text.indexOf('/ban') + 1]
+          const userFromDb = await User.findOne({ username: user })
+          if (userFromDb) {
+            userFromDb.isBanned = true
+            await userFromDb.save()
+          }
+        }
+        if (text.includes('/unban')) {
+          const user = text[text.indexOf('/unban') + 1]
+          const userFromDb = await User.findOne({ username: user })
+          if (userFromDb) {
+            userFromDb.isBanned = false
+            await userFromDb.save()
+          }
+        }
       }
       const message: IMessage = {
-        user: user?.username as any,
+        user: user!.username as any,
         message: data.message
       }
       messageList.push(message)
@@ -175,6 +195,10 @@ function socket({ io }: { io: Server }) {
       if (playlist.length < 20) {
         const decodedToken = jwt.verify(data.token, process.env.JWT_SECRET as string) as any
         const user = await User.findById({ _id: decodedToken.id })
+        if (user!.isBanned) {
+          socket.emit('USER_BANNED', 'You are banned')
+          return;
+        }
         const { id }: any = getVideoId(data.id)
         const { title } = await getYTVideoInfo({ videoId: id, part: 'snippet' })
         const { duration } = await getVideoDuration(id)
@@ -197,7 +221,7 @@ function socket({ io }: { io: Server }) {
             videoTimer: current.videoTimer
           })
         }
-        socket.emit('SUCCESS')
+        socket.emit('SUCCESS', 'Video added to playlist')
         io.sockets.emit('GET_PLAYLIST', playlist)
       } else {
         socket.emit('FAIL', 'Playlist is full')
