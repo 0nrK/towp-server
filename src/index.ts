@@ -184,7 +184,7 @@ function socket({ io }: { io: Server }) {
         }
       }
       const message: IMessage = {
-        user: user!.username as any,
+        user: user!.username as string,
         message: data.message
       }
       messageList.push(message)
