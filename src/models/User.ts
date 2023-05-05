@@ -6,6 +6,8 @@ export interface UserInterface extends Document {
     isAdmin: boolean
     isBanned: boolean
     email: string
+    isEmailVerified: boolean
+    verificationString: string
 }
 
 const userSchema: Schema = new Schema<UserInterface>(
@@ -23,6 +25,10 @@ const userSchema: Schema = new Schema<UserInterface>(
             required: true,
             default: false,
         },
+        isEmailVerified: {
+            type: Boolean,
+            required: true,
+        },
         isBanned: {
             type: Boolean,
             default: false
@@ -30,12 +36,22 @@ const userSchema: Schema = new Schema<UserInterface>(
         email: {
             type: String,
             required: true,
+        },
+        verificationString:{
+            type: String,
         }
     },
     {
         timestamps: true,
     }
 )
+
+userSchema.pre('save', async function () {
+    if (this.isNew) {
+        const verificationString = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15)
+        this.verificationString = verificationString
+      }
+})
 
 
 userSchema.set('toJSON', {

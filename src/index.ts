@@ -203,7 +203,7 @@ function socket({ io }: { io: Server }) {
         const { title } = await getYTVideoInfo({ videoId: id, part: 'snippet' })
         const { duration } = await getVideoDuration(id)
         if (!title || !duration || !id) {
-          throw new Error('Error geting video duration')
+          return;
         }
         const formatedDuration = durationFormater(duration)
         const thumbnail = `https://img.ytimg.com/vi/${id}/default.jpg`

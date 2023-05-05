@@ -2,6 +2,7 @@ import express, { Request, Response } from 'express'
 import User from '../models/User'
 import bcrypt from 'bcryptjs'
 import generateToken from '../utils/generateJwt'
+import sendMail from '../utils/mail'
 
 const router = express.Router()
 
@@ -14,6 +15,7 @@ router.post('/register', async (req: Request, res: Response) => {
         const hashedPw = await bcrypt.hash(password, 10)
         const user = await new User({ username, password: hashedPw, email })
         await user.save()
+        sendMail(email)
         const token = generateToken(user?._id as string)
         return res.status(200).send({ user, token })
     } catch (err) {
@@ -38,5 +40,19 @@ router.post('/login', async (req: Request, res: Response) => {
         res.status(400).send(err)
     }
 });
+
+router.get('/verify/:uniqueString', async (req: Request, res: Response) => {
+    try {
+        const { uniqueString } = req.params
+        const user = await User.findOne({ uniqueString })
+        if (user) {
+            user.isEmailVerified = true
+            await user.save()
+        }
+    } catch (err) {
+        res.status(400).send(err)
+    }
+})
+
 
 export default router
