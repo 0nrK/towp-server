@@ -15,7 +15,7 @@ router.post('/register', async (req: Request, res: Response) => {
         const hashedPw = await bcrypt.hash(password, 10)
         const user = await new User({ username, password: hashedPw, email })
         await user.save()
-        sendMail(email, user.verificationString)
+        await sendMail(email, user.verificationString)
         const token = generateToken(user?._id as string)
         return res.status(200).send({ user, token })
     } catch (err) {

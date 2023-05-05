@@ -27,7 +27,6 @@ const userSchema: Schema = new Schema<UserInterface>(
         },
         isEmailVerified: {
             type: Boolean,
-            required: true,
         },
         isBanned: {
             type: Boolean,
