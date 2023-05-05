@@ -1,5 +1,5 @@
 import nodemailer from 'nodemailer'
-const sendMail = async (to: string) => {
+const sendMail = async (to: string, verificationString: string) => {
     const transporter = nodemailer.createTransport({
         service: 'gmail',
         auth: {
@@ -11,7 +11,7 @@ const sendMail = async (to: string) => {
         from: 'ToWP',
         to: to,
         subject: 'E-mail verification',
-        html: `<h1>Click <a href="https://towp-server-0nrk.onrender.com/api/auth/verify/${to}">here</a> to verify your e-mail</h1>`
+        html: `<h1>Click <a href="https://towp-server-0nrk.onrender.com/api/auth/verify/${verificationString}">here</a> to verify your e-mail</h1>`
     };
     await transporter.sendMail(mailOptions);
 };

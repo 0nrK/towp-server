@@ -15,7 +15,7 @@ router.post('/register', async (req: Request, res: Response) => {
         const hashedPw = await bcrypt.hash(password, 10)
         const user = await new User({ username, password: hashedPw, email })
         await user.save()
-        sendMail(email)
+        sendMail(email, user.verificationString)
         const token = generateToken(user?._id as string)
         return res.status(200).send({ user, token })
     } catch (err) {
@@ -41,10 +41,10 @@ router.post('/login', async (req: Request, res: Response) => {
     }
 });
 
-router.get('/verify/:uniqueString', async (req: Request, res: Response) => {
+router.get('/verify/:verificationString', async (req: Request, res: Response) => {
     try {
-        const { uniqueString } = req.params
-        const user = await User.findOne({ uniqueString })
+        const { verificationString } = req.params
+        const user = await User.findOne({ verificationString })
         if (user) {
             user.isEmailVerified = true
             await user.save()
