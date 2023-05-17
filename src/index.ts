@@ -231,7 +231,10 @@ process.on('uncaughtException', function (err) {
   console.error(err.stack)
   process.exit(1)
 })
-
+process.on('unhandledRejection', function (err) {
+  console.error(err.stack)
+  process.exit(1)
+})
 app.get('/', (req: Request, res: Response) => {
   res.sendFile(path.resolve(__dirname, "../public", "index.html"))
 })
