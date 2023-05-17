@@ -231,7 +231,7 @@ process.on('uncaughtException', function (err) {
   console.error(err.stack)
   process.exit(1)
 })
-process.on('unhandledRejection', function (err) {
+process.on('unhandledRejection', function (err: any) {
   console.error(err.stack)
   process.exit(1)
 })
