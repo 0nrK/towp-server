@@ -5,7 +5,6 @@ import http from 'http';
 import { Server } from "socket.io";
 import getVideoId from 'get-video-id';
 import loaders from "./config/db";
-import session from 'express-session'
 import { durationFormater, getVideoDuration, getYTVideoInfo } from "./utils/yt";
 import authRoute from './routes/authRoute'
 import bodyParser from "body-parser";
@@ -24,13 +23,7 @@ app.use(express.urlencoded({ extended: true }));
 dotenv.config()
 
 app.use(bodyParser.json())
-app.use(
-  session({
-    secret: process.env.SESSION_SECRET as string,
-    resave: false,
-    saveUninitialized: false
-  })
-);
+
 app.use(bodyParser.urlencoded({
   extended: false
 }));
@@ -234,6 +227,10 @@ function socket({ io }: { io: Server }) {
 
 socket({ io })
 
+process.on('uncaughtException', function (err) {
+  console.error(err.stack)
+  process.exit(1)
+})
 
 app.get('/', (req: Request, res: Response) => {
   res.sendFile(path.resolve(__dirname, "../public", "index.html"))
