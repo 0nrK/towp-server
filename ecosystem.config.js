@@ -1,0 +1,36 @@
+module.exports = {
+  apps: [
+    {
+      name: "app",
+      script: "./dist/index.js",
+      env: {
+        NODE_ENV: "development",
+        CLUSTER: "eu",
+        SESSION_SECRET: process.env.SESSION_SECRET,
+        JWT_SECRET: process.env.JWT_SECRET,
+        MONGODB_PASSWORD: process.env.MONGODB_PASSWORD,
+        MONGODB_URI: process.env.MONGODB_URI,
+        YT_API_KEY: process.env.YT_API_KEY,
+        YT_CLIENT_SECRET: process.env.YT_CLIENT_SECRET,
+        YT_CLIENT_ID: process.YT_CLIENT_ID,
+        PORT: process.env.PORT,
+        TOWP_EMAIL: process.env.TOWP_EMAIL,
+        TOWP_EMAIL_PASSWORD: process.env.TOWP_EMAIL_PASSWORD,
+      },
+      env_production: {
+        NODE_ENV: "production",
+        CLUSTER: "eu",
+        SESSION_SECRET: process.env.SESSION_SECRET,
+        JWT_SECRET: process.env.JWT_SECRET,
+        MONGODB_PASSWORD: process.env.MONGODB_PASSWORD,
+        MONGODB_URI: process.env.MONGODB_URI,
+        YT_API_KEY: process.env.YT_API_KEY,
+        YT_CLIENT_SECRET: process.env.YT_CLIENT_SECRET,
+        YT_CLIENT_ID: process.YT_CLIENT_ID,
+        PORT: process.env.PORT,
+        TOWP_EMAIL: process.env.TOWP_EMAIL,
+        TOWP_EMAIL_PASSWORD: process.env.TOWP_EMAIL_PASSWORD,
+      },
+    },
+  ],
+};
