@@ -4,6 +4,7 @@ export async function getYTVideoInfo({ videoId, part = 'snippet' }: { videoId: s
     try {
         const response = await axios.get(`https://www.googleapis.com/youtube/v3/videos?part=${part}&id=${videoId}&key=${process.env.YT_API_KEY}`)
         const data = response.data
+        if (!data) throw new Error('Video not found')
         const videoData = data.items[0][part]
         return videoData
     } catch (err) {
@@ -15,6 +16,7 @@ export async function getVideoDuration(videoId: string) {
     try {
         const response = await axios.get(`https://www.googleapis.com/youtube/v3/videos?part=contentDetails&id=${videoId}&key=${process.env.YT_API_KEY}`)
         const data = response.data
+        if (!data) throw new Error('Video not found')
         const videoData = data.items[0].contentDetails
         return videoData
     } catch (err) {
