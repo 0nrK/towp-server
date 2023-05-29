@@ -13,14 +13,13 @@ import path from "path";
 import User from "./models/User";
 import { IMessage } from "./types/message";
 import jwt from "jsonwebtoken";
-import { promisify } from "./utils/promisify";
 
 const app = express();
 
 app.use(cors({
   origin: "https://towp.online"
 }));
-app.use(function(req, res, next) {
+app.use(function (req, res, next) {
   res.header('Access-Control-Allow-Origin', '*');
   res.header(
     'Access-Control-Allow-Headers',
@@ -122,6 +121,7 @@ function socket({ io }: { io: Server }) {
   console.log(`Sockets enabled`);
 
   io.on('connection', (socket: any) => {
+
     socket.emit('GET_VIDEO', {
       video: current.video,
       videoTimer: current.videoTimer
@@ -138,15 +138,10 @@ function socket({ io }: { io: Server }) {
       socket.emit('GET_PLAYLIST', playlist)
     })
 
-    setInterval(() => {
-      socket.emit('CURRENT_VIDEO', {
-        video: current.video,
-      })
-    }, 3000)
-
-
     console.log(`User connected ${socket.id}`);
+
     sockets.push(socket.id)
+
     socket.on('disconnect', (socket: any) => {
       console.log(`User disconnected ${socket.id}`);
       sockets.splice(sockets.indexOf(socket.id), 1)
@@ -203,37 +198,43 @@ function socket({ io }: { io: Server }) {
           return;
         }
         const { id }: any = getVideoId(data.id)
-        const { title } = await getYTVideoInfo({ videoId: id, part: 'snippet' })
-        const { duration } = await getVideoDuration(id)
-        if (!title || !duration || !id) {
-          return;
-        }
-        const formatedDuration = durationFormater(duration)
-        const thumbnail = `https://img.ytimg.com/vi/${id}/default.jpg`
-        playlist.push({
-          videoId: id,
-          title,
-          thumbnail,
-          duration: formatedDuration,
-          createdBy: user?.username
-        })
-        if (!current.video) {
-          current.video = playlist[0]
-          io.sockets.emit('GET_VIDEO', {
-            video: current.video,
-            videoTimer: current.videoTimer
+        try {
+          const videoInfo = await getYTVideoInfo({ videoId: id, part: 'snippet' })
+          if (!videoInfo || !videoInfo.title) {
+            throw new Error('Video title not found');
+          }
+          const { title } = videoInfo
+          const videoDurationData = await getVideoDuration(id)
+          if (!videoDurationData) {
+            throw new Error('Video duration not found');
+          }
+          const { duration } = videoDurationData
+          const formatedDuration = durationFormater(duration)
+          const thumbnail = `https://img.ytimg.com/vi/${id}/default.jpg`
+          playlist.push({
+            videoId: id,
+            title,
+            thumbnail,
+            duration: formatedDuration,
+            createdBy: user?.username
           })
+          if (!current.video) {
+            current.video = playlist[0]
+            io.sockets.emit('GET_VIDEO', {
+              video: current.video,
+              videoTimer: current.videoTimer
+            })
+          }
+          socket.emit('SUCCESS', 'Video added to playlist')
+          io.sockets.emit('GET_PLAYLIST', playlist)
+        } catch (err) {
+          socket.emit('FAIL', 'Video not found')
+          console.log(err)
         }
-        socket.emit('SUCCESS', 'Video added to playlist')
-        io.sockets.emit('GET_PLAYLIST', playlist)
-      } else {
-        socket.emit('FAIL', 'Playlist is full')
       }
     })
-  });
-
+  })
 }
-
 
 socket({ io })
 
