@@ -129,7 +129,7 @@ function socket({ io }: { io: Server }) {
 
     socket.emit('GET_PLAYLIST', playlist)
     socket.emit('GET_MESSAGES', messageList)
-
+    
     socket.on('VIDEO_ENDS', () => {
       socket.emit('GET_VIDEO', {
         video: current.video,
@@ -184,6 +184,11 @@ function socket({ io }: { io: Server }) {
       const message: IMessage = {
         user: user!.username as string,
         message: data.message
+      }
+
+      //! TODO: temporary AWFUL solution- implement redis ASAP
+      if(messageList.length > 100){
+        messageList.slice(50)
       }
       messageList.push(message)
       io.sockets.emit('GET_MESSAGES', messageList)
